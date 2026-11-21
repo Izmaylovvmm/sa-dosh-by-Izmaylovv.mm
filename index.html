@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Са Дош — Вход в игру</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="auth-body">
+
+    <div class="auth-box">
+        <h2>СА ДОШ</h2>
+        <span class="auth-author" style="font-size: 10px; color: rgba(16, 185, 129, 0.35); font-weight: 500; letter-spacing: 1px; text-shadow: none; margin-bottom: 16px; display: block;">v2.0 | by Izmaylov</span>
+
+        <input type="text" id="usernameInput" placeholder="Введите ваше имя">
+        <input type="text" id="roomCodeInput" placeholder="Код комнаты (для создания / входа)">
+
+        <!-- Настройки создаваемой комнаты -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0 14px 0; text-align: left; background: rgba(20, 34, 27, 0.7); padding: 10px 12px; border-radius: 8px; border: 1px solid #23332b;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #f4f6f5; cursor: pointer;">
+                <input type="checkbox" id="openRoomCheck" style="width: 16px; height: 16px; accent-color: #10b981; margin: 0;">
+                <span>🌐 Сделать комнату открытой (видна всем)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #f59e0b; cursor: pointer;">
+                <input type="checkbox" id="teamModeCheck" style="width: 16px; height: 16px; accent-color: #f59e0b; margin: 0;">
+                <span>⚔️ Командная битва (до 20 игроков, 10x10)</span>
+            </label>
+        </div>
+
+        <button onclick="joinPrivate()" class="main-btn">Войти / Создать комнату</button>
+        <button onclick="joinPublic()" class="main-btn" style="background: #f59e0b; margin-top: 10px;">
+            ⛺ Быстрая игра <span id="publicOnlineBadge" style="font-size: 11px; opacity: 0.9;">(0/50)</span>
+        </button>
+        <button onclick="toggleModal(true)" class="main-btn" style="background: #2563eb; margin-top: 10px;">📜 Инструкция и Правила</button>
+
+        <!-- Живой список открытых комнат -->
+        <div id="openRoomsSection" style="margin-top: 16px; text-align: left; background: rgba(15, 25, 20, 0.85); border: 1px solid #23332b; border-radius: 10px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #10b981;">
+                <span>🌍 Открытые комнаты</span>
+                <span id="totalOnlineText" style="font-size: 11px; color: #9ca3af;">Онлайн: 0</span>
+            </div>
+            <div id="openRoomsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto;">
+                <div style="font-size: 11px; color: #6b7280; text-align: center; padding: 6px 0;">Пока нет открытых комнат</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 18px;">
+            <span onclick="openOwnerModal()" style="font-size: 11px; color: rgba(255, 255, 255, 0.2); cursor: pointer; text-decoration: underline; user-select: none;">👨‍💻 Авторизовать устройство</span>
+        </div>
+    </div>
+    <!-- Модальное окно инструкции и правил -->
+    <div id="rulesModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>СА ДОШ — ИНСТРУКЦИЯ И ПРАВИЛА</h3>
+            
+            <div class="modal-scroll-text">
+                <p style="color: #10b981; font-weight: 700; margin-bottom: 5px;">🕹️ УПРАВЛЕНИЕ И РЕЖИМЫ КОМНАТ:</p>
+                <ul>
+                    <li><b>Поле «Введите ваше имя»</b> — Твой игровой никнейм в чате и таблице лидеров. Клик по нику любого игрока в комнате подставит обращение <b>@Имя</b> в чат.</li>
+                    <li><b>Поле «Код комнаты»</b> — Секретный номер для приватной игры с друзьями. Первый зашедший игрок становится <b>Администратором</b> комнаты.</li>
+                    <li><b>Открытая комната (🌐)</b> — Если поставить галочку при создании, комната отобразится в списке <b>«Открытые комнаты»</b> на главной странице, и любой сможет войти в неё в один клик.</li>
+                    <li><b>Командная битва (⚔️ до 20 игроков)</b> — Игроки делятся на две команды: <b>🟢 Команда Магаса</b> и <b>🟡 Команда Джейраха</b> (до 10 человек в каждой). До старта можно сменить команду. Игру запускает Администратор комнаты. Ходы чередуются между командами, побеждает команда, первой набравшая <b>100 очков</b>.</li>
+                    <li><b>Быстрая игра (⛺)</b> — Общая комната до <b>50 человек</b> без администраторов.</li>
+                </ul>
+
+                <p style="color: #10b981; font-weight: 700; margin-top: 15px; margin-bottom: 5px;">🎙️ ГОЛОСОВОЙ ЧАТ И АНТИ-СПОЙЛЕР:</p>
+                <ul>
+                    <li><b>Кнопка микрофона (🎙️)</b> — Нажми один раз, чтобы включить эфир (кнопка загорится красным) и объяснять слово голосом.</li>
+                    <li><b>Анти-спойлер и Мут</b> — При смене раунда микрофон ведущего отключается автоматически. Если ведущий случайно произнёс загаданное слово вслух, Администратор или Модератор может нажать <b>«⚠️ Спойлер (-5)»</b>: раунд отменится, а с ведущего спишется 5 очков. Также модераторы могут отключить микрофон нарушителю на 30 секунд (<b>🔇 Мут</b>).</li>
+                </ul>
+
+                <p style="color: #10b981; font-weight: 700; margin-top: 15px; margin-bottom: 5px;">📜 ПРАВИЛА ИГРЫ И МАГАЗИН:</p>
+                <p>1. Ведущий получает ингушское слово с переводом и объясняет его голосом или подсказками в чате. Писать само слово в чат запрещено.</p>
+                <p>2. Первый угадавший получает <b>+10 очков</b>, а ведущий — <b>+5 очков</b>. В обычном режиме игра идёт до <b>50 очков</b>, после чего открывается <b>Подиум Победителей (Топ-3)</b>.</p>
+                <p>3. Если слово слишком сложное или ведущий молчит, угадывающие могут нажать <b>«⏭️ Сменить слово»</b> — если проголосует больше половины игроков, слово сменится без штрафов.</p>
+                <p>4. За заработанные очки в магазине можно купить: <b>💡 Первую букву (5 очк.)</b>, <b>❄️ Заморозку чата сопернику на 15 сек (10 очк.)</b> и <b>⏳ Ускорение таймера на -20 сек (15 очк.)</b>.</p>
+            </div>
+
+            <button onclick="toggleModal(false)" class="main-btn" style="background: #ef4444; margin-top: 20px;">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        const lobbySocket = io();
+
+        // Подстановка кода комнаты из ссылки приглашения, если есть (?room=...)
+        const initParams = new URLSearchParams(window.location.search);
+        if (initParams.get('room')) {
+            document.getElementById('roomCodeInput').value = initParams.get('room');
+        }
+
+        lobbySocket.emit('getLobbyState');
+        lobbySocket.on('lobbyState', (state) => {
+            const publicBadge = document.getElementById('publicOnlineBadge');
+            if (publicBadge) publicBadge.innerText = `(${state.publicCount}/50)`;
+
+            let total = state.publicCount;
+            const listEl = document.getElementById('openRoomsList');
+            if (!listEl) return;
+
+            if (!state.openRooms || state.openRooms.length === 0) {
+                listEl.innerHTML = '<div style="font-size: 11px; color: #6b7280; text-align: center; padding: 6px 0;">Пока нет открытых комнат</div>';
+            } else {
+                listEl.innerHTML = '';
+                state.openRooms.forEach(r => {
+                    total += r.count;
+                    const modeTag = r.isTeamMode ? '⚔️ Команды' : '🎲 Обычная';
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#14221b; border:1px solid #23332b; border-radius:6px; padding:6px 8px; font-size:11px;';
+                    item.innerHTML = `
+                        <div>
+                            <div style="color:#f4f6f5; font-weight:700;">🔑 ${r.id} <span style="color:#10b981;">(${r.count}/${r.max})</span></div>
+                            <div style="color:#9ca3af; font-size:10px;">${modeTag} • Хост: ${r.host}</div>
+                        </div>
+                        <button onclick="quickJoinOpen('${r.id}')" style="background:#10b981; color:#000; border:none; border-radius:5px; padding:5px 10px; font-weight:800; font-size:11px; cursor:pointer;">Войти</button>
+                    `;
+                    listEl.appendChild(item);
+                });
+            }
+
+            const totalText = document.getElementById('totalOnlineText');
+            if (totalText) totalText.innerText = `Онлайн: ${total}`;
+        });
+
+        function joinPrivate() {
+            const name = document.getElementById('usernameInput').value.trim();
+            const room = document.getElementById('roomCodeInput').value.trim();
+            const isOpen = document.getElementById('openRoomCheck').checked ? '1' : '0';
+            const isTeam = document.getElementById('teamModeCheck').checked ? '1' : '0';
+
+            if (!room) {
+                alert("Введите код комнаты для создания или входа!");
+                return;
+            }
+
+            window.location.href = `room.html?name=${encodeURIComponent(name || "Игрок")}&room=${encodeURIComponent(room)}&open=${isOpen}&team=${isTeam}`;
+        }
+
+        function quickJoinOpen(roomId) {
+            const name = document.getElementById('usernameInput').value.trim();
+            window.location.href = `room.html?name=${encodeURIComponent(name || "Игрок")}&room=${encodeURIComponent(roomId)}`;
+        }
+
+        function joinPublic() {
+            const name = document.getElementById('usernameInput').value.trim();
+            window.location.href = `room.html?name=${encodeURIComponent(name || "Игрок")}&room=public_test`;
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('rulesModal');
+            if (modal) modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function openOwnerModal() {
+            const login = prompt("Введите логин создателя:");
+            const password = prompt("Введите секретный пароль:");
+            if (login && password) {
+                localStorage.setItem('owner_login', login);
+                localStorage.setItem('owner_pass', password);
+                alert("Данные сохранены! Теперь при входе в любую комнату вы будете авторизованы как Owner.");
+            }
+        }
+    </script>
+</body>
+</html>

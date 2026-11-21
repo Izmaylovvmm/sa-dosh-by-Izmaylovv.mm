@@ -1,0 +1,366 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #0b130f;
+  color: #f4f6f5;
+}
+
+/* === ГЛАВНАЯ СТРАНИЦА (ВХОД) === */
+body.auth-body {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+    background: linear-gradient(rgba(11, 19, 15, 0.55), rgba(11, 19, 15, 0.8)), url('voti.jpg') center / cover no-repeat fixed;
+
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(17, 28, 22, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid #23332b;
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
+}
+
+.auth-box h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #10b981;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.auth-box input[type="text"] {
+  width: 100%;
+  background: rgba(20, 34, 27, 0.9);
+  border: 1px solid #23332b;
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.auth-box input[type="text"]:focus {
+  border-color: #10b981;
+}
+
+.main-btn {
+  width: 100%;
+  background: #10b981;
+  color: #051b11;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.main-btn:active {
+  transform: scale(0.98);
+}
+
+/* === МОДАЛЬНОЕ ОКНО ПРАВИЛ === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 520px;
+  max-height: 85dvh;
+  background: #111c16;
+  border: 1px solid #23332b;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content h3 {
+  color: #10b981;
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.modal-scroll-text {
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d1d5db;
+  padding-right: 6px;
+}
+
+.modal-scroll-text ul {
+  padding-left: 18px;
+  margin-bottom: 10px;
+}
+
+.modal-scroll-text li,
+.modal-scroll-text p {
+  margin-bottom: 8px;
+}
+/* === ИГРОВАЯ КОМНАТА (ШИРОКИЙ МАКЕТ НА ПК С ФОНОМ voti.png) === */
+html, body.room-body {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(rgba(11, 19, 15, 0.55), rgba(11, 19, 15, 0.72)), url('voti.jpg') center / cover no-repeat fixed;
+}
+
+.top-bar {
+  height: 48px;
+  background: rgba(17, 28, 22, 0.9);
+  border-bottom: 1px solid #23332b;
+}
+
+/* На ПК: 2 колонки (слева игроки, справа во всю ширину табло + чат на фоне персонажа) */
+.main-content {
+  height: calc(100dvh - 48px);
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+.leaderboard-panel {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  overflow-y: auto;
+  background: rgba(15, 25, 20, 0.85);
+  border-right: 1px solid #23332b;
+  padding: 12px;
+}
+
+.game-board {
+  grid-column: 2;
+  grid-row: 1;
+  background: rgba(19, 33, 26, 0.65);
+  border-bottom: 1px solid #23332b;
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.chat-container {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: rgba(11, 19, 15, 0.45);
+}
+
+.reaction-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floating-emoji {
+  position: absolute;
+  bottom: 10px;
+  font-size: 28px;
+  animation: floatUp 2.2s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.8); opacity: 1; }
+  100% { transform: translateY(-140px) scale(1.3); opacity: 0; }
+}
+/* === КАРТОЧКИ ИГРОКОВ И КНОПКИ УПРАВЛЕНИЯ === */
+.users-list-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.player-card-row {
+  background: rgba(20, 34, 27, 0.9);
+  border: 1px solid #1e3127;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.player-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-name-link {
+  cursor: pointer;
+  text-decoration: underline dotted rgba(255, 255, 255, 0.25);
+  word-break: break-word;
+}
+
+.player-card-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ctrl-btn {
+  border: none;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+/* === ЧАТ И ПАНЕЛЬ ВВОДА === */
+.chat-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-msg {
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.chat-mention {
+  background: rgba(245, 158, 11, 0.18);
+  border-left: 3px solid #f59e0b;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.reactions-bar {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 5px 12px;
+  background: rgba(15, 25, 20, 0.85);
+  border-top: 1px solid #1a2821;
+}
+
+.emoji-btn {
+  background: #14221b;
+  border: 1px solid #23332b;
+  border-radius: 8px;
+  font-size: 16px;
+  padding: 4px 14px;
+  cursor: pointer;
+}
+
+.chat-input-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px)) 10px;
+  background: rgba(17, 28, 22, 0.95);
+  border-top: 1px solid #23332b;
+}
+
+.chat-input-bar input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  background: #14221b;
+  border: 1px solid #23332b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.mic-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #14221b;
+  border: 2px solid #23332b;
+  color: #f4f6f5;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.mic-btn.active {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #10b981;
+  border: none;
+  color: #051b11;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* === МОБИЛЬНАЯ АДАПТАЦИЯ (ДЛЯ ТЕЛЕФОНОВ) === */
+@media (max-width: 768px) {
+  .main-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .game-board {
+    order: 1;
+    flex-shrink: 0;
+    padding: 8px 10px;
+  }
+
+  .leaderboard-panel {
+    order: 2;
+    flex-shrink: 0;
+    max-height: 28dvh;
+    border-right: none;
+    border-bottom: 1px solid #23332b;
+    padding: 6px 10px;
+  }
+
+  .chat-container {
+    order: 3;
+    flex: 1 1 auto;
+  }
+}
